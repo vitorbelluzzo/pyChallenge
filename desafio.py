@@ -10,20 +10,25 @@ response = requests.get(url)
 
 soup = BeautifulSoup(response.content, 'html.parser')
 
+#title
 resposta_final['title'] = soup.select_one('h2#product_title').get_text()
+
+
+#brand
 resposta_final['brand'] = soup.select_one('div.brand').get_text()
 
+#categories
 categories_list = [] 
 for element in soup.select('nav.current-category > a'):
     categories_list.append(element.text)
 
 resposta_final['categories'] = categories_list
+
+#description
 resposta_final['description'] = soup.select_one('div.product-details > p').getText().replace("\n","").strip()
 
-review_score = soup.select_one('div#comments > h4').get_text().replace('Average score:','')
-review_score = review_score.replace('/5','')
-resposta_final['reviews_average_score'] = float(review_score)
 
+#skus
 sku_list = []
 product = {}
 sku_area = soup.select(".skus-area > div")[0]
@@ -37,7 +42,6 @@ for sku in sku_area.select(".card"):
     else:
         product["current_price"] = None
    
-
     if card_container.select_one(".sku-old-price") != None:
         product["old_price"] = float(card_container.select_one(".sku-old-price").get_text().strip().replace("$ ",""))
     else:
@@ -48,17 +52,16 @@ for sku in sku_area.select(".card"):
     else:
         product["available"] = True
 
-
     sku_list.append(product.copy())
-
 
 resposta_final['skus'] = sku_list
 
+
+#properties
 tableProperties = soup.select('.pure-table')
 
 propy = {}
 props = []
-
 
 for table in tableProperties:
     for row in table.select('tr'):
@@ -69,11 +72,12 @@ for table in tableProperties:
                 propy['value'] = row.select('td')[1].get_text().strip()
 
             props.append(propy.copy())
-        
-  
 
+            resposta_final['skus'] = sku_list
+        
 resposta_final['properties'] = props
 
+#reviews
 comment = {}
 reviews = []
 
@@ -86,8 +90,18 @@ for review in soup.select('div#comments > div.review-box'):
     reviews.append(comment.copy())
 
 resposta_final['reviews'] =(reviews)
+
+#reviews_average_score
+review_score = soup.select_one('div#comments > h4').get_text().replace('Average score:','')
+review_score = review_score.replace('/5','')
+
+resposta_final['reviews_average_score'] = float(review_score)
+
+
+#url
 resposta_final['Url'] = (url)
 
+#json
 json_resposta_final = json.dumps(resposta_final)
 with open('produto.json', 'w') as arquivo_json:
     arquivo_json.write(json_resposta_final)
