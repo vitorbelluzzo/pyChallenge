@@ -78,12 +78,14 @@ comment = {}
 reviews = []
 
 for review in soup.select('div#comments > div.review-box'):
-    print(review.select_one(".review-username").get_text().strip())
-    print(review.select_one(".review-date").get_text().strip())
-    print(review.select_one(".review-stars").get_text().strip())
-    print(review.find("p").get_text().strip())
+    comment['name'] = review.select_one(".review-username").get_text().strip()
+    comment['date']= review.select_one(".review-date").get_text().strip()
+    comment['score']= review.select_one(".review-stars").getText().strip()
+    comment['text']= review.select_one("p").getText().strip()
 
+    reviews.append(comment.copy())
 
+resposta_final['reviews'] =(reviews)
 resposta_final['Url'] = (url)
 
 json_resposta_final = json.dumps(resposta_final)
